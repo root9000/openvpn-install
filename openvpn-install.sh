@@ -5,6 +5,21 @@
 # Copyright (c) 2013 Nyr. Released under the MIT License.
 
 
+if grep -qs "14.04" "/etc/os-release"; then
+	echo "Ubuntu 14.04 is too old and not supported"
+	exit
+fi
+
+if grep -qs "jessie" "/etc/os-release"; then
+	echo "Debian 8 is too old and not supported"
+	exit
+fi
+
+if grep -qs "CentOS release 6" "/etc/redhat-release"; then
+	echo "CentOS 6 is too old and not supported"
+	exit
+fi
+
 if grep -qs "Ubuntu 16.04" "/etc/os-release"; then
 	echo 'Ubuntu 16.04 is no longer supported in the current version of openvpn-install
 Use an older version if Ubuntu 16.04 support is needed: https://git.io/vpn1604'
@@ -145,6 +160,7 @@ if [[ -e /etc/openvpn/server/server.conf ]]; then
 				fi
 				systemctl disable --now openvpn-server@server.service
 				rm -rf /etc/openvpn/server
+				rm -f /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
 				rm -f /etc/sysctl.d/30-openvpn-forward.conf
 				if [[ "$OS" = 'debian' ]]; then
 					apt-get remove --purge -y openvpn
@@ -212,6 +228,12 @@ else
 	echo
 	echo "Okay, that was all I needed. We are ready to set up your OpenVPN server now."
 	read -n1 -r -p "Press any key to continue..."
+	# If running inside a container, disable LimitNPROC to prevent conflicts
+	if systemd-detect-virt -cq; then
+		mkdir /etc/systemd/system/openvpn-server@server.service.d/ 2>/dev/null
+		echo '[Service]
+LimitNPROC=infinity' > /etc/systemd/system/openvpn-server@server.service.d/disable-limitnproc.conf
+	fi
 	if [[ "$OS" = 'debian' ]]; then
 		apt-get update
 		apt-get install openvpn iptables openssl ca-certificates -y
