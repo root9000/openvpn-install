@@ -93,9 +93,9 @@ new_client () {
 	echo "<key>"
 	cat /etc/openvpn/server/easy-rsa/pki/private/"$client".key
 	echo "</key>"
-	echo "<tls-crypt>"
-	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
-	echo "</tls-crypt>"
+#	echo "<tls-crypt>"
+#	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
+#	echo "</tls-crypt>"
 	} > ~/"$client".ovpn
 }
 
@@ -274,8 +274,8 @@ ca ca.crt
 cert server.crt
 key server.key
 dh dh.pem
-auth SHA512
-tls-crypt tc.key
+auth SHA1
+#tls-crypt tc.key
 topology subnet
 server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 	# IPv6
@@ -416,7 +416,7 @@ nobind
 persist-key
 persist-tun
 remote-cert-tls server
-auth SHA512
+auth SHA1
 ignore-unknown-option block-outside-dns
 verb 3" > /etc/openvpn/server/client-common.txt
 	# Enable and start the OpenVPN service
